@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Attacker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background: linear-gradient(to bottom, #FF6B35 0%, #FFA500 20%, #FFD700 40%, #90EE90 60%, #228B22 100%);
+            font-family: Arial, sans-serif;
+            cursor: none;
+        }
+        
+        /* Tall grass background */
+        .grass-container {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 40%;
+            background: linear-gradient(to top, #1a4d00 0%, #2d6b0b 30%, #3d8b1a 50%, #4da01f 100%);
+            overflow: hidden;
+        }
+        
+        .grass {
+            position: absolute;
+            bottom: 0;
+            width: 3px;
+            background: linear-gradient(to top, #0a2800, #1a5500, #2d8b00);
+            opacity: 0.8;
+        }
+        
+        #creature {
+            position: absolute;
+            width: 80px;
+            height: 100px;
+            transition: all 0.05s ease-out;
+        }
+        
+        svg {
+            width: 100%;
+            height: 100%;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+        }
+        
+        .attacking {
+            animation: attackSwing 0.3s ease-in-out;
+        }
+        
+        @keyframes attackSwing {
+            0% { transform: scaleX(1) rotate(0deg); }
+            50% { transform: scaleX(1.1) rotate(-15deg); }
+            100% { transform: scaleX(1) rotate(0deg); }
+        }
+        
+        .title {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 24px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+    <div class="title">🌾 Don't Let It Catch You! 🌾</div>
+    
+    <div class="grass-container" id="grassContainer"></div>
+    
+    <div id="creature"></div>
+    
+    <script>
+        const creature = document.getElementById('creature');
+        const grassContainer = document.getElementById('grassContainer');
+        
+        let creatureX = window.innerWidth / 2;
+        let creatureY = window.innerHeight / 2;
+        let cursorX = window.innerWidth / 2;
+        let cursorY = window.innerHeight / 2;
+        
+        const speed = 3;
+        const attackDistance = 80;
+        
+        // Generate random tall grass
+        function generateGrass() {
+            grassContainer.innerHTML = '';
+            for (let i = 0; i < 200; i++) {
+                const grass = document.createElement('div');
+                grass.className = 'grass';
+                grass.style.left = Math.random() * 100 + '%';
+                grass.style.height = 20 + Math.random() * 60 + 'px';
+                grass.style.opacity = 0.3 + Math.random() * 0.5;
+                grassContainer.appendChild(grass);
+            }
+        }
+        
+        generateGrass();
+        
+        // Track cursor position
+        document.addEventListener('mousemove', (e) => {
+            cursorX = e.clientX;
+            cursorY = e.clientY;
+        });
+        
+        // Create creature SVG
+        function createCreatureSVG(isAttacking = false) {
+            return `
+                <svg viewBox="0 0 80 100" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Body -->
+                    <ellipse cx="40" cy="50" rx="25" ry="35" fill="#FF1744"/>
+                    
+                    <!-- Head -->
+                    <circle cx="40" cy="25" r="18" fill="#FF1744"/>
+                    
+                    <!-- Eyes white -->
+                    <circle cx="33" cy="22" r="6" fill="white"/>
+                    <circle cx="47" cy="22" r="6" fill="white"/>
+                    
+                    <!-- Eyes pupil -->
+                    <circle cx="33" cy="23" r="3" fill="black"/>
+                    <circle cx="47" cy="23" r="3" fill="black"/>
+                    
+                    <!-- Glasses frames -->
+                    <rect x="26" y="16" width="10" height="10" rx="5" fill="none" stroke="#333" stroke-width="2"/>
+                    <rect x="44" y="16" width="10" height="10" rx="5" fill="none" stroke="#333" stroke-width="2"/>
+                    <line x1="36" y1="21" x2="44" y2="21" stroke="#333" stroke-width="2"/>
+                    
+                    <!-- Nose -->
+                    <line x1="40" y1="25" x2="40" y2="32" stroke="#CC0000" stroke-width="1"/>
+                    
+                    <!-- Mouth -->
+                    <path d="M 35 35 Q 40 38 45 35" stroke="black" stroke-width="1.5" fill="none"/>
+                    
+                    <!-- Left arm -->
+                    <g transform="translate(18, 45)">
+                        <rect x="0" y="0" width="8" height="25" rx="4" fill="#E91E63"/>
+                        <circle cx="4" cy="28" r="4" fill="#E91E63"/>
+                    </g>
+                    
+                    <!-- Right arm with sickle -->
+                    <g transform="translate(54, 45) ${isAttacking ? 'rotate(-30)' : 'rotate(0)'}">
+                        <rect x="0" y="0" width="8" height="25" rx="4" fill="#E91E63"/>
+                        <circle cx="4" cy="28" r="4" fill="#E91E63"/>
+                        <!-- Sickle blade -->
+                        <path d="M 2 30 Q 15 25 20 35 Q 18 38 5 32" fill="#DAA520" stroke="#8B7500" stroke-width="1"/>
+                        <path d="M 18 33 L 20 35 L 19 38" fill="#DAA520"/>
+                    </g>
+                    
+                    <!-- Left leg -->
+                    <rect x="28" y="82" width="7" height="18" rx="3" fill="#FF6B6B"/>
+                    <circle cx="31.5" cy="100" r="4" fill="#333"/>
+                    
+                    <!-- Right leg -->
+                    <rect x="45" y="82" width="7" height="18" rx="3" fill="#FF6B6B"/>
+                    <circle cx="48.5" cy="100" r="4" fill="#333"/>
+                </svg>
+            `;
+        }
+        
+        let isAttacking = false;
+        let attackCooldown = 0;
+        
+        // Animation loop
+        function animate() {
+            // Calculate distance to cursor
+            const dx = cursorX - creatureX;
+            const dy = cursorY - creatureY;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            // Move towards cursor
+            if (distance > 5) {
+                const angle = Math.atan2(dy, dx);
+                creatureX += Math.cos(angle) * speed;
+                creatureY += Math.sin(angle) * speed;
+            }
+            
+            // Check if should attack
+            attackCooldown--;
+            if (distance < attackDistance && attackCooldown <= 0) {
+                isAttacking = true;
+                attackCooldown = 20;
+                creature.classList.add('attacking');
+                setTimeout(() => {
+                    creature.classList.remove('attacking');
+                }, 300);
+            }
+            
+            // Update creature position
+            creature.style.left = creatureX + 'px';
+            creature.style.top = creatureY + 'px';
+            
+            // Flip based on direction
+            if (dx < 0) {
+                creature.style.transform = 'scaleX(-1)';
+            } else {
+                creature.style.transform = 'scaleX(1)';
+            }
+            
+            // Update SVG
+            creature.innerHTML = createCreatureSVG(isAttacking);
+            
+            requestAnimationFrame(animate);
+        }
+        
+        // Keep creature in bounds
+        setInterval(() => {
+            if (creatureX < 0) creatureX = 0;
+            if (creatureX > window.innerWidth - 80) creatureX = window.innerWidth - 80;
+            if (creatureY < 0) creatureY = 0;
+            if (creatureY > window.innerHeight - 100) creatureY = window.innerHeight - 100;
+        }, 100);
+        
+        animate();
+    </script>
+</body>
+</html>
