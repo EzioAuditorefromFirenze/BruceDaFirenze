@@ -1,0 +1,616 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Arcane Insights - Tarot Readings</title>
+    <style type="text/css">
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; }
+        body {
+            font-family: Georgia, Garamond, serif;
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+            position: relative;
+            padding: 20px;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 50%, rgba(255, 107, 107, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(78, 205, 196, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            width: 100%;
+            animation: fadeIn 1s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: #e0e0e0;
+        }
+        .header h1 {
+            font-size: 48px;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #ff6b9d 0%, #c06c84 50%, #6c5b7b 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 300;
+            letter-spacing: 2px;
+        }
+        .header p {
+            font-size: 16px;
+            color: #b0b0b0;
+            font-style: italic;
+            letter-spacing: 1px;
+        }
+        .questions-phase {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 40px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            animation: slideIn 0.6s ease-out;
+        }
+        .questions-phase.hidden { display: none; }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .questions-phase h2 {
+            font-size: 28px;
+            color: #e0e0e0;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .question-group {
+            margin-bottom: 30px;
+            animation: fadeIn 0.8s ease-out backwards;
+        }
+        .question-group:nth-child(1) { animation-delay: 0.1s; }
+        .question-group:nth-child(2) { animation-delay: 0.2s; }
+        .question-group:nth-child(3) { animation-delay: 0.3s; }
+        .question-group:nth-child(4) { animation-delay: 0.4s; }
+        .question-group label {
+            display: block;
+            color: #c0c0c0;
+            margin-bottom: 12px;
+            font-size: 16px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+        .question-group input,
+        .question-group textarea,
+        .question-group select {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: #e0e0e0;
+            font-family: Georgia, serif;
+            font-size: 15px;
+            transition: all 0.3s ease;
+        }
+        .question-group input:focus,
+        .question-group textarea:focus,
+        .question-group select:focus {
+            outline: none;
+            border-color: rgba(255, 107, 107, 0.5);
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 15px rgba(255, 107, 107, 0.2);
+        }
+        .question-group textarea {
+            resize: vertical;
+            min-height: 80px;
+            font-size: 14px;
+        }
+        .spread-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .spread-option input[type="radio"] { display: none; }
+        .spread-option label {
+            display: block;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 0;
+            color: #c0c0c0;
+        }
+        .spread-option input[type="radio"]:checked + label {
+            border-color: rgba(255, 107, 107, 0.8);
+            background: rgba(255, 107, 107, 0.15);
+            color: #ff6b9d;
+            box-shadow: 0 0 15px rgba(255, 107, 107, 0.3);
+        }
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 40px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        button {
+            padding: 14px 40px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            letter-spacing: 1px;
+            font-family: Georgia, serif;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #ff6b9d 0%, #c06c84 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.6);
+        }
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #c0c0c0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+        .reading-phase {
+            display: none;
+            animation: fadeIn 0.8s ease-out;
+        }
+        .reading-phase.active { display: block; }
+        .reading-title {
+            text-align: center;
+            color: #e0e0e0;
+            margin-bottom: 30px;
+        }
+        .reading-title h2 {
+            font-size: 32px;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .reading-title p {
+            color: #b0b0b0;
+            font-size: 16px;
+            font-style: italic;
+        }
+        .cards-container {
+            display: grid;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        .cards-grid-3 { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+        .cards-grid-1 { grid-template-columns: 1fr; max-width: 250px; margin: 0 auto; }
+        .card {
+            perspective: 1000px;
+            height: 300px;
+            cursor: pointer;
+            animation: cardEntrance 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) backwards;
+        }
+        .card:nth-child(1) { animation-delay: 0.1s; }
+        .card:nth-child(2) { animation-delay: 0.3s; }
+        .card:nth-child(3) { animation-delay: 0.5s; }
+        @keyframes cardEntrance {
+            from { opacity: 0; transform: translateY(50px) rotateX(90deg); }
+            to { opacity: 1; transform: translateY(0) rotateX(0deg); }
+        }
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+        .card.flipped .card-inner { transform: rotateY(180deg); }
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+        .card-back {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-size: 48px;
+        }
+        .card-back::before {
+            content: '✦';
+            position: absolute;
+            animation: spin 8s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .card-front {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            backface-visibility: hidden;
+            transform: rotateY(180deg);
+            padding: 20px;
+            text-align: center;
+            color: #2c3e50;
+            overflow: hidden;
+        }
+        .card-number { font-size: 12px; color: #95a5a6; margin-bottom: 8px; font-weight: bold; }
+        .card-name { font-size: 18px; font-weight: bold; color: #2c3e50; margin-bottom: 12px; }
+        .card-suit { font-size: 32px; margin-bottom: 8px; }
+        .card-meaning { font-size: 13px; color: #34495e; line-height: 1.5; font-style: italic; }
+        .card-reversed { color: #e74c3c; font-weight: bold; font-size: 11px; margin-top: 8px; text-transform: uppercase; }
+        .reading-interpretation {
+            background: rgba(255, 255, 255, 0.05);
+            border-left: 4px solid rgba(255, 107, 107, 0.6);
+            padding: 25px;
+            border-radius: 8px;
+            margin-top: 30px;
+            animation: slideIn 0.8s ease-out;
+        }
+        .reading-interpretation h3 {
+            color: #ff6b9d;
+            font-size: 18px;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .reading-interpretation p {
+            color: #c0c0c0;
+            line-height: 1.8;
+            margin-bottom: 12px;
+            font-size: 15px;
+        }
+        .flip-hint {
+            text-align: center;
+            color: #8899aa;
+            font-size: 14px;
+            margin-top: 20px;
+            font-style: italic;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+        .flip-hint.hidden { display: none; }
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            color: #6c7a88;
+            font-size: 13px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        @media (max-width: 768px) {
+            .header h1 { font-size: 36px; }
+            .questions-phase { padding: 25px; }
+            .card { height: 250px; }
+            .cards-grid-3 { grid-template-columns: 1fr; }
+            .button-group { flex-direction: column; }
+            button { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>✦ Arcane Insights ✦</h1>
+            <p>Step into the realm of the tarot</p>
+        </div>
+
+        <div class="questions-phase" id="questionsPhase">
+            <h2>Before Your Reading</h2>
+            <form id="readingForm">
+                <div class="question-group">
+                    <label for="name">What is your name? *</label>
+                    <input type="text" id="name" name="name" placeholder="Your name here..." required="required" />
+                </div>
+
+                <div class="question-group">
+                    <label for="question">What is your primary question or concern? *</label>
+                    <textarea id="question" name="question" placeholder="Ask what weighs on your heart..." required="required"></textarea>
+                </div>
+
+                <div class="question-group">
+                    <label for="areaOfLife">Which area of life does this concern? *</label>
+                    <select id="areaOfLife" name="areaOfLife" required="required">
+                        <option value="">-- Select --</option>
+                        <option value="love">Love &amp; Relationships</option>
+                        <option value="career">Career &amp; Purpose</option>
+                        <option value="finance">Finance &amp; Abundance</option>
+                        <option value="health">Health &amp; Wellness</option>
+                        <option value="personal">Personal Growth</option>
+                        <option value="spirituality">Spirituality &amp; Destiny</option>
+                        <option value="family">Family &amp; Home</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+
+                <div class="question-group">
+                    <label>Choose your spread *</label>
+                    <div class="spread-options">
+                        <div class="spread-option">
+                            <input type="radio" id="spread1" name="spread" value="1" required="required" />
+                            <label for="spread1">Single Card<br /><small>Quick Insight</small></label>
+                        </div>
+                        <div class="spread-option">
+                            <input type="radio" id="spread3" name="spread" value="3" required="required" />
+                            <label for="spread3">Three Card<br /><small>Past, Present, Future</small></label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button type="submit" class="btn-primary">Begin Your Reading</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="reading-phase" id="readingPhase">
+            <div class="reading-title">
+                <h2 id="readingSpreadName"></h2>
+                <p id="readingQuestion"></p>
+            </div>
+
+            <div class="cards-container" id="cardsContainer"></div>
+
+            <div class="flip-hint" id="flipHint">
+                ✧ Click each card to reveal its secrets ✧
+            </div>
+
+            <div class="reading-interpretation" id="interpretation"></div>
+
+            <div class="button-group">
+                <button class="btn-secondary" onclick="resetReading(); return false;">New Reading</button>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>🔮 For entertainment purposes. Trust your intuition above all else.</p>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        var TAROT_DECK = [
+            { id: 0, name: "The Fool", suit: "Major", number: "0", emoji: "🤡", meaning: "New beginnings, spontaneity, blindly taking risks" },
+            { id: 1, name: "The Magician", suit: "Major", number: "I", emoji: "🎩", meaning: "Manifestation, resourcefulness, power, inspired action" },
+            { id: 2, name: "The High Priestess", suit: "Major", number: "II", emoji: "👰", meaning: "Intuition, wisdom, mystery, subconscious mind" },
+            { id: 3, name: "The Empress", suit: "Major", number: "III", emoji: "👑", meaning: "Creativity, abundance, fertility, nurturing" },
+            { id: 4, name: "The Emperor", suit: "Major", number: "IV", emoji: "🤴", meaning: "Authority, structure, control, father figure" },
+            { id: 5, name: "The Hierophant", suit: "Major", number: "V", emoji: "🙏", meaning: "Tradition, conformity, education, belief systems" },
+            { id: 6, name: "The Lovers", suit: "Major", number: "VI", emoji: "💕", meaning: "Relationship, choices, alignment, values in harmony" },
+            { id: 7, name: "The Chariot", suit: "Major", number: "VII", emoji: "🏎️", meaning: "Control, willpower, direction, determination" },
+            { id: 8, name: "Strength", suit: "Major", number: "VIII", emoji: "💪", meaning: "Inner strength, patience, control, compassion" },
+            { id: 9, name: "The Hermit", suit: "Major", number: "IX", emoji: "🏔️", meaning: "Soul searching, introspection, inner guidance, solitude" },
+            { id: 10, name: "Wheel of Fortune", suit: "Major", number: "X", emoji: "🎡", meaning: "Destiny, cycles, karma, turning point" },
+            { id: 11, name: "Justice", suit: "Major", number: "XI", emoji: "⚖️", meaning: "Justice, fairness, truth, cause and effect" },
+            { id: 12, name: "The Hanged Man", suit: "Major", number: "XII", emoji: "🔀", meaning: "Pause, perspective shift, let go, new viewpoint" },
+            { id: 13, name: "Death", suit: "Major", number: "XIII", emoji: "🦑", meaning: "Transformation, endings, new beginnings, change" },
+            { id: 14, name: "Temperance", suit: "Major", number: "XIV", emoji: "⚗️", meaning: "Balance, moderation, harmony, patience" },
+            { id: 15, name: "The Devil", suit: "Major", number: "XV", emoji: "😈", meaning: "Bondage, materialism, playfulness, detachment" },
+            { id: 16, name: "The Tower", suit: "Major", number: "XVI", emoji: "🗼", meaning: "Sudden change, upheaval, chaos, revelation" },
+            { id: 17, name: "The Star", suit: "Major", number: "XVII", emoji: "⭐", meaning: "Hope, spirituality, healing, awakening, renewal" },
+            { id: 18, name: "The Moon", suit: "Major", number: "XVIII", emoji: "🌙", meaning: "Illusion, intuition, uncertainty, fear, subconscious" },
+            { id: 19, name: "The Sun", suit: "Major", number: "XIX", emoji: "☀️", meaning: "Success, vitality, joy, positivity, fulfillment" },
+            { id: 20, name: "Judgement", suit: "Major", number: "XX", emoji: "👼", meaning: "Awakening, renewal, reckoning, inner calling" },
+            { id: 21, name: "The World", suit: "Major", number: "XXI", emoji: "🌍", meaning: "Fulfillment, completion, wholeness, unity" },
+            { id: 22, name: "Ace of Cups", suit: "Cups", number: "1", emoji: "🏆", meaning: "New relationships, new feelings, emotional awakening" },
+            { id: 23, name: "Two of Cups", suit: "Cups", number: "2", emoji: "💑", meaning: "Partnership, mutual attraction, closeness, harmony" },
+            { id: 24, name: "Three of Cups", suit: "Cups", number: "3", emoji: "🎉", meaning: "Community, celebration, joy, lifelong friends" },
+            { id: 25, name: "Four of Cups", suit: "Cups", number: "4", emoji: "🤔", meaning: "Meditation, apathy, contemplation, reevaluation" },
+            { id: 26, name: "Five of Cups", suit: "Cups", number: "5", emoji: "😢", meaning: "Loss, grief, sadness, loneliness, despair" },
+            { id: 27, name: "Ace of Pentacles", suit: "Pentacles", number: "1", emoji: "💎", meaning: "New opportunity, prosperity, abundance, well-being" },
+            { id: 28, name: "Two of Pentacles", suit: "Pentacles", number: "2", emoji: "🤹", meaning: "Balance, dexterity, flexibility, adaptability" },
+            { id: 29, name: "Three of Pentacles", suit: "Pentacles", number: "3", emoji: "🏗️", meaning: "Collaboration, learning, development, teamwork" },
+            { id: 30, name: "Four of Pentacles", suit: "Pentacles", number: "4", emoji: "🤲", meaning: "Hoarding, security, possessiveness, stagnation" },
+            { id: 31, name: "Five of Pentacles", suit: "Pentacles", number: "5", emoji: "❄️", meaning: "Hardship, poverty, insecurity, desperation" },
+            { id: 32, name: "Ace of Swords", suit: "Swords", number: "1", emoji: "⚔️", meaning: "New ideas, mental clarity, truth, breakthrough" },
+            { id: 33, name: "Two of Swords", suit: "Swords", number: "2", emoji: "🔀", meaning: "Stalemate, difficult choice, indecision, information block" },
+            { id: 34, name: "Three of Swords", suit: "Swords", number: "3", emoji: "💔", meaning: "Heartbreak, emotional pain, sorrow, difficult truths" },
+            { id: 35, name: "Four of Swords", suit: "Swords", number: "4", emoji: "🛌", meaning: "Rest, respite, truce, recuperation, contemplation" },
+            { id: 36, name: "Five of Swords", suit: "Swords", number: "5", emoji: "⚡", meaning: "Conflict, disagreements, tension, loss, defeat" },
+            { id: 37, name: "Ace of Wands", suit: "Wands", number: "1", emoji: "🔥", meaning: "Inspiration, new opportunities, growth, potential" },
+            { id: 38, name: "Two of Wands", suit: "Wands", number: "2", emoji: "🌍", meaning: "Planning, making decisions, leaving home, exploring" },
+            { id: 39, name: "Three of Wands", suit: "Wands", number: "3", emoji: "👀", meaning: "Exploration, foresight, discovery, progress" },
+            { id: 40, name: "Four of Wands", suit: "Wands", number: "4", emoji: "🎊", meaning: "Celebration, harmony, home, community" },
+            { id: 41, name: "Five of Wands", suit: "Wands", number: "5", emoji: "⚔️", meaning: "Conflict, disagreement, tension, competition" }
+        ];
+
+        function getCookie(name) {
+            var nameEQ = name + "=";
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = cookies[i].trim();
+                if (cookie.indexOf(nameEQ) === 0) {
+                    return decodeURIComponent(cookie.substring(nameEQ.length));
+                }
+            }
+            return null;
+        }
+
+        function setCookie(name, value, days) {
+            days = days || 365;
+            var date = new Date();
+            date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
+            var expires = "expires=" + date.toUTCString();
+            document.cookie = name + "=" + encodeURIComponent(value) + ";" + expires + ";path=/";
+        }
+
+        function getRandomCards(count) {
+            var shuffled = TAROT_DECK.slice().sort(function() { return Math.random() - 0.5; });
+            return shuffled.slice(0, count);
+        }
+
+        function isReversed() {
+            return Math.random() > 0.5;
+        }
+
+        function generateInterpretation(cards, question, area) {
+            var cardNames = cards.map(function(c) { return c.name; }).join(", ");
+            var interpretations = {
+                love: "In matters of the heart, the cards speak of " + cardNames + ". These cards suggest that your romantic journey involves " + cards[0].meaning.toLowerCase() + ". Pay attention to the energies around trust and communication in your relationships.",
+                career: "Regarding your professional path, " + cardNames + " emerge. This indicates " + cards[0].meaning.toLowerCase() + ". The cards encourage you to consider new strategies and remain adaptable in your work environment.",
+                finance: "Your financial reading shows " + cardNames + ". This suggests " + cards[0].meaning.toLowerCase() + ". Be mindful of your resources and look for opportunities to create stability in your financial foundation.",
+                health: "The wellness cards reveal " + cardNames + ". This points to " + cards[0].meaning.toLowerCase() + ". Remember that true health encompasses mind, body, and spirit. Listen to what your intuition is telling you.",
+                personal: "In your personal growth journey, " + cardNames + " appear. They whisper of " + cards[0].meaning.toLowerCase() + ". This is a time for reflection and transformation. Trust the process of becoming who you're meant to be.",
+                spirituality: "Your spiritual path illuminates with " + cardNames + ". These cards reveal " + cards[0].meaning.toLowerCase() + ". The universe is guiding you towards deeper understanding and connection with your higher self.",
+                family: "Regarding family matters, " + cardNames + " surface. This speaks to " + cards[0].meaning.toLowerCase() + ". Consider the dynamics at play and seek harmony through open communication and compassion.",
+                other: "The cards present " + cardNames + ", suggesting " + cards[0].meaning.toLowerCase() + ". Let these insights guide your contemplation of the matter at hand."
+            };
+            return interpretations[area] || interpretations.other;
+        }
+
+        document.getElementById('readingForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            var name = document.getElementById('name').value;
+            var question = document.getElementById('question').value;
+            var areaOfLife = document.getElementById('areaOfLife').value;
+            var spread = document.getElementById('spread').value;
+
+            var formData = {
+                name: name,
+                question: question,
+                areaOfLife: areaOfLife,
+                spread: spread
+            };
+
+            setCookie("lastVisitor", formData.name);
+            setCookie("lastArea", formData.areaOfLife);
+
+            var cardCount = parseInt(formData.spread);
+            var selectedCards = getRandomCards(cardCount);
+            selectedCards.forEach(function(card) {
+                card.reversed = isReversed();
+            });
+
+            formData.cards = selectedCards;
+            displayReading(formData, selectedCards);
+        });
+
+        function displayReading(formData, cards) {
+            document.getElementById('questionsPhase').classList.add('hidden');
+            document.getElementById('readingPhase').classList.add('active');
+
+            var spreadNames = {
+                "1": "Single Card Reading",
+                "3": "Three Card Spread - Past, Present, Future"
+            };
+
+            document.getElementById('readingSpreadName').textContent = spreadNames[formData.spread];
+            document.getElementById('readingQuestion').textContent = '"' + formData.question + '"';
+
+            var cardsContainer = document.getElementById('cardsContainer');
+            cardsContainer.className = 'cards-container cards-grid-' + formData.spread;
+            cardsContainer.innerHTML = '';
+
+            var positionLabels = ['Past', 'Present', 'Future'];
+
+            cards.forEach(function(card, index) {
+                var cardDiv = document.createElement('div');
+                cardDiv.className = 'card';
+
+                var positionLabel = formData.spread === '3' ? positionLabels[index] : '';
+                var html = '<div class="card-inner">' +
+                    '<div class="card-face card-back"><span>✦</span></div>' +
+                    '<div class="card-face card-front">' +
+                    (positionLabel ? '<div style="color: #ff6b9d; font-size: 12px; margin-bottom: 8px; font-weight: bold;">' + positionLabel + '</div>' : '') +
+                    '<div class="card-number">#' + card.number + '</div>' +
+                    '<div class="card-suit">' + card.emoji + '</div>' +
+                    '<div class="card-name">' + card.name + '</div>' +
+                    '<div class="card-meaning">' + card.meaning + '</div>' +
+                    (card.reversed ? '<div class="card-reversed">REVERSED</div>' : '') +
+                    '</div></div>';
+
+                cardDiv.innerHTML = html;
+                cardDiv.addEventListener('click', function() {
+                    this.classList.toggle('flipped');
+                    checkAllFlipped();
+                });
+
+                cardsContainer.appendChild(cardDiv);
+            });
+
+            var interpretation = generateInterpretation(cards, formData.question, formData.areaOfLife);
+            document.getElementById('interpretation').innerHTML =
+                '<h3>The Message of the Cards</h3>' +
+                '<p>' + interpretation + '</p>' +
+                '<p style="margin-top: 15px; color: #aabbcc; font-size: 14px;">Remember, the cards are a reflection of your inner wisdom. Trust your intuition to find the true meaning in these symbols.</p>';
+
+            setTimeout(function() {
+                document.getElementById('readingPhase').scrollIntoView({ behavior: 'smooth' });
+            }, 100);
+        }
+
+        function checkAllFlipped() {
+            var cards = document.querySelectorAll('.card');
+            var allFlipped = true;
+            for (var i = 0; i < cards.length; i++) {
+                if (!cards[i].classList.contains('flipped')) {
+                    allFlipped = false;
+                    break;
+                }
+            }
+            if (allFlipped) {
+                document.getElementById('flipHint').classList.add('hidden');
+            }
+        }
+
+        function resetReading() {
+            document.getElementById('readingForm').reset();
+            document.getElementById('questionsPhase').classList.remove('hidden');
+            document.getElementById('readingPhase').classList.remove('active');
+            document.getElementById('flipHint').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        window.addEventListener('load', function() {
+            var lastVisitor = getCookie("lastVisitor");
+            if (lastVisitor) {
+                document.getElementById('name').value = lastVisitor;
+                var lastArea = getCookie("lastArea");
+                if (lastArea) {
+                    document.getElementById('areaOfLife').value = lastArea;
+                }
+            }
+        });
+    </script>
+</body>
+</html>
